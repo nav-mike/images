@@ -7,10 +7,28 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+
+	"github.com/disintegration/imaging"
 )
 
 type UploadImageDTO struct {
 	File string
+}
+
+type ImageSize struct {
+	Width  int
+	Height int
+}
+
+func (is ImageSize) String() string {
+	return fmt.Sprintf("%dx%d", is.Width, is.Height)
+}
+
+// const array of image sizes
+var imageSizes = [...]ImageSize{
+	{Width: 100, Height: 100},
+	{Width: 200, Height: 200},
+	{Width: 300, Height: 300},
 }
 
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
@@ -34,7 +52,19 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result := map[string]string{"result": "success", "filename": filename}
+	filenames := []string{}
+
+	for _, size := range imageSizes {
+		rszFilename, err := resizeImage(filename, size)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			fmt.Println(err)
+			return
+		}
+		filenames = append(filenames, rszFilename)
+	}
+
+	result := map[string]string{"result": "success", "filename": filename, imageSizes[0].String(): filenames[0], imageSizes[1].String(): filenames[1], imageSizes[2].String(): filenames[2]}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(result)
@@ -66,6 +96,25 @@ func saveToFile(input UploadImageDTO) (string, error) {
 
 func generateFilename(original string) string {
 	return fmt.Sprintf("%x", sha1.Sum([]byte(original)))
+}
+
+func resizeImage(filename string, size ImageSize) (string, error) {
+	// read image from the file
+	src, err := imaging.Open(filename)
+	if err != nil {
+		return "", err
+	}
+
+	result := imaging.Resize(src, 0, size.Height, imaging.Lanczos)
+
+	// save the resulting image using png format.
+	resizedFilename := size.String() + "-" + generateFilename(filename) + ".png"
+	err = imaging.Save(result, resizedFilename)
+	if err != nil {
+		return "", err
+	}
+
+	return resizedFilename, nil
 }
 
 func main() {
