@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/sha1"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -47,7 +48,7 @@ func saveToFile(input UploadImageDTO) error {
 	}
 
 	// Create file
-	file, err := os.Create("image.png")
+	file, err := os.Create(generateFilename("image.png") + ".png")
 	if err != nil {
 		return err
 	}
@@ -60,6 +61,10 @@ func saveToFile(input UploadImageDTO) error {
 	}
 
 	return nil
+}
+
+func generateFilename(original string) string {
+	return fmt.Sprintf("%x", sha1.Sum([]byte(original)))
 }
 
 func main() {
