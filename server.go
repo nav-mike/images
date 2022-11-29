@@ -15,7 +15,8 @@ import (
 const IMAGES_DIR = "images"
 
 type UploadImageDTO struct {
-	File string
+	File   string
+	UserId string
 }
 
 type ImageSize struct {
@@ -58,7 +59,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = os.MkdirAll(IMAGES_DIR+"/", os.ModePerm)
+	err = os.MkdirAll(IMAGES_DIR+"/"+file.UserId, os.ModePerm)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		fmt.Println(err)
@@ -75,7 +76,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	filenames := []string{}
 
 	for _, size := range imageSizes {
-		rszFilename, err := resizeImage(filename, size)
+		rszFilename, err := resizeImage(filename, file.UserId, size)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			fmt.Println(err)
@@ -108,7 +109,7 @@ func saveToFile(input UploadImageDTO) (string, error) {
 	}
 
 	// Create file
-	filename := generateFilename("image.png", "original") + ".png"
+	filename := generateFilename("image.png", input.UserId+"/original") + ".png"
 	file, err := os.Create(filename)
 	if err != nil {
 		return "", err
@@ -132,7 +133,7 @@ func generateFilename(original, prefix string) string {
 	return fmt.Sprintf("%s/%s-%x", IMAGES_DIR, prefix, sha1.Sum([]byte(original)))
 }
 
-func resizeImage(filename string, size ImageSize) (string, error) {
+func resizeImage(filename, userId string, size ImageSize) (string, error) {
 	// read image from the file
 	src, err := imaging.Open(filename)
 	if err != nil {
@@ -142,7 +143,7 @@ func resizeImage(filename string, size ImageSize) (string, error) {
 	result := imaging.Resize(src, 0, size.Height, imaging.Lanczos)
 
 	// save the resulting image using png format.
-	resizedFilename := generateFilename(filename, size.String()) + ".png"
+	resizedFilename := generateFilename(filename, userId+"/"+size.String()) + ".png"
 	err = imaging.Save(result, resizedFilename)
 	if err != nil {
 		return "", err
