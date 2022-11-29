@@ -11,6 +11,8 @@ import (
 	"github.com/disintegration/imaging"
 )
 
+const IMAGES_DIR = "images"
+
 type UploadImageDTO struct {
 	File string
 }
@@ -42,6 +44,13 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&file)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		fmt.Println(err)
+		return
+	}
+
+	err = os.MkdirAll(IMAGES_DIR+"/", os.ModePerm)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		fmt.Println(err)
 		return
 	}
@@ -96,7 +105,7 @@ func saveToFile(input UploadImageDTO) (string, error) {
 }
 
 func generateFilename(original string) string {
-	return fmt.Sprintf("%x", sha1.Sum([]byte(original)))
+	return fmt.Sprintf("%s/%x", IMAGES_DIR, sha1.Sum([]byte(original)))
 }
 
 func resizeImage(filename string, size ImageSize) (string, error) {
@@ -109,7 +118,7 @@ func resizeImage(filename string, size ImageSize) (string, error) {
 	result := imaging.Resize(src, 0, size.Height, imaging.Lanczos)
 
 	// save the resulting image using png format.
-	resizedFilename := size.String() + "-" + generateFilename(filename) + ".png"
+	resizedFilename := generateFilename(size.String()+"-"+filename) + ".png"
 	err = imaging.Save(result, resizedFilename)
 	if err != nil {
 		return "", err
