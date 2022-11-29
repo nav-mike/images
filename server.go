@@ -88,7 +88,7 @@ func saveToFile(input UploadImageDTO) (string, error) {
 	}
 
 	// Create file
-	filename := generateFilename("image.png") + ".png"
+	filename := generateFilename("image.png", "original") + ".png"
 	file, err := os.Create(filename)
 	if err != nil {
 		return "", err
@@ -104,8 +104,12 @@ func saveToFile(input UploadImageDTO) (string, error) {
 	return filename, nil
 }
 
-func generateFilename(original string) string {
-	return fmt.Sprintf("%s/%x", IMAGES_DIR, sha1.Sum([]byte(original)))
+func generateFilename(original, prefix string) string {
+	if prefix == "" {
+		prefix = "original"
+	}
+
+	return fmt.Sprintf("%s/%s-%x", IMAGES_DIR, prefix, sha1.Sum([]byte(original)))
 }
 
 func resizeImage(filename string, size ImageSize) (string, error) {
@@ -118,7 +122,7 @@ func resizeImage(filename string, size ImageSize) (string, error) {
 	result := imaging.Resize(src, 0, size.Height, imaging.Lanczos)
 
 	// save the resulting image using png format.
-	resizedFilename := generateFilename(size.String()+"-"+filename) + ".png"
+	resizedFilename := generateFilename(filename, size.String()) + ".png"
 	err = imaging.Save(result, resizedFilename)
 	if err != nil {
 		return "", err
