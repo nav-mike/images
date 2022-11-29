@@ -12,6 +12,7 @@ import (
 
 	"github.com/disintegration/imaging"
 	"github.com/nav-mike/images/config"
+	v1 "github.com/nav-mike/images/internal/controller/http/v1"
 )
 
 const IMAGES_DIR = "data/images"
@@ -165,14 +166,12 @@ func resizeImage(filename, userId string, size ImageSize) (string, error) {
 }
 
 func main() {
-	_, err := config.LoadConfig()
+	conf, err := config.LoadConfig()
 	if err != nil {
 		return
 	}
 
 	log.Println("Starting server on port 8080")
 
-	http.HandleFunc("/upload", UploadHandler)
-	http.HandleFunc("/data/images/", ImageHandler)
-	http.ListenAndServe(":8080", nil)
+	v1.NewRouter(conf)
 }
