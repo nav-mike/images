@@ -13,7 +13,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-const IMAGES_DIR = "images"
+const IMAGES_DIR = "data/images"
 
 type UploadImageDTO struct {
 	File   string
@@ -48,7 +48,7 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if strings.HasPrefix(r.URL.Path, "/images/"+userId) {
+	if strings.HasPrefix(r.URL.Path, "/"+IMAGES_DIR+"/"+userId) {
 		http.ServeFile(w, r, r.URL.Path[1:])
 	} else {
 		http.Error(w, "Forbidden", http.StatusForbidden)
@@ -170,6 +170,6 @@ func main() {
 	}
 
 	http.HandleFunc("/upload", UploadHandler)
-	http.HandleFunc("/images/", ImageHandler)
+	http.HandleFunc("/data/images/", ImageHandler)
 	http.ListenAndServe(":8080", nil)
 }

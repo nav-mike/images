@@ -1,4 +1,4 @@
 .vscode/
 .DS_Store
-images/**/*.png
+data/images/**/*.png
 .env
