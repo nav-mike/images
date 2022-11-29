@@ -2,22 +2,17 @@ package v1
 
 import (
 	"crypto/sha1"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/disintegration/imaging"
 	"github.com/nav-mike/images/config"
+	"github.com/nav-mike/images/internal/entity"
+	"github.com/nav-mike/images/internal/usecase/repo/filesystem"
 )
-
-type UploadImageDTO struct {
-	File   string
-	UserId string
-}
 
 type ImageSize struct {
 	Height int // avoid using width here because proportional scaling is required
@@ -43,7 +38,7 @@ func PostUploadImageHandler(config *config.Config) http.HandlerFunc {
 			return
 		}
 
-		var file UploadImageDTO
+		var file entity.UploadImageDTO
 
 		err := json.NewDecoder(r.Body).Decode(&file)
 		if err != nil {
@@ -51,33 +46,27 @@ func PostUploadImageHandler(config *config.Config) http.HandlerFunc {
 			return
 		}
 
-		err = os.MkdirAll(dirPath(config, file.UserId), os.ModePerm)
+		fs := filesystem.NewFileSystem(config.ImagesDir)
+		result, err := fs.SaveImage(file)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 
-		originalFilename, err := saveToFile(config, file)
-		if err != nil {
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
+		// resizedFilenames := make([]string, len(imageSizes))
 
-		resizedFilenames := make([]string, len(imageSizes))
+		// for i, size := range imageSizes {
+		// 	resizedFilenames[i], err = resizeImage(config, originalFilename, file.UserId, size)
+		// 	if err != nil {
+		// 		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		// 		return
+		// 	}
+		// }
 
-		for i, size := range imageSizes {
-			resizedFilenames[i], err = resizeImage(config, originalFilename, file.UserId, size)
-			if err != nil {
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
-				return
-			}
-		}
-
-		result := make(map[string]string)
-		for index, sizeString := range imageSizes {
-			result[sizeString.String()] = imageUrl(config, resizedFilenames[index])
-		}
-		result["original"] = imageUrl(config, originalFilename)
+		// result := make(map[string]string)
+		// for index, sizeString := range imageSizes {
+		// 	result[sizeString.String()] = imageUrl(config, resizedFilenames[index])
+		// }
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(result)
@@ -86,30 +75,6 @@ func PostUploadImageHandler(config *config.Config) http.HandlerFunc {
 
 func dirPath(config *config.Config, userId string) string {
 	return config.ImagesDir + "/" + userId
-}
-
-func saveToFile(config *config.Config, input UploadImageDTO) (string, error) {
-	// Decode base64 string to []byte
-	decoded, err := base64.StdEncoding.DecodeString(input.File)
-	if err != nil {
-		return "", err
-	}
-
-	// Create file
-	filename := generateFilename(config, input.UserId, "original")
-	file, err := os.Create(filename)
-	if err != nil {
-		return "", err
-	}
-	defer file.Close()
-
-	// Write data to file
-	_, err = file.Write(decoded)
-	if err != nil {
-		return "", err
-	}
-
-	return filename, nil
 }
 
 func generateFilename(config *config.Config, userId, prefix string) string {
