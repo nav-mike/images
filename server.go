@@ -148,6 +148,9 @@ func main() {
 		fmt.Println("Error loading .env file")
 	}
 
+	fs := http.FileServer(http.Dir(IMAGES_DIR))
+
 	http.HandleFunc("/upload", UploadHandler)
+	http.Handle("/"+IMAGES_DIR+"/", http.StripPrefix("/"+IMAGES_DIR+"/", fs))
 	http.ListenAndServe(":8080", nil)
 }
