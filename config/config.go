@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	ServerHostUrl string
+	ImagesDir     string
 }
 
 func LoadConfig() (*Config, error) {
@@ -22,5 +23,6 @@ func LoadConfig() (*Config, error) {
 
 	return &Config{
 		ServerHostUrl: os.Getenv("SERVER_HOST_URL"),
+		ImagesDir:     os.Getenv("IMAGES_DIR"),
 	}, nil
 }
