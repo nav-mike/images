@@ -34,6 +34,15 @@ var imageSizes = [...]ImageSize{
 	{Width: 300, Height: 300},
 }
 
+func ImageHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	http.ServeFile(w, r, r.URL.Path[1:])
+}
+
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -148,9 +157,7 @@ func main() {
 		fmt.Println("Error loading .env file")
 	}
 
-	fs := http.FileServer(http.Dir(IMAGES_DIR))
-
 	http.HandleFunc("/upload", UploadHandler)
-	http.Handle("/"+IMAGES_DIR+"/", http.StripPrefix("/"+IMAGES_DIR+"/", fs))
+	http.HandleFunc("/images/", ImageHandler)
 	http.ListenAndServe(":8080", nil)
 }
