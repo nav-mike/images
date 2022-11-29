@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/disintegration/imaging"
+	"github.com/joho/godotenv"
 )
 
 const IMAGES_DIR = "images"
@@ -74,10 +75,20 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		filenames = append(filenames, rszFilename)
 	}
 
-	result := map[string]string{"result": "success", "filename": filename, imageSizes[0].String(): filenames[0], imageSizes[1].String(): filenames[1], imageSizes[2].String(): filenames[2]}
+	result := map[string]string{
+		"result":               "success",
+		"filename":             makeImageUrl(filename),
+		imageSizes[0].String(): makeImageUrl(filenames[0]),
+		imageSizes[1].String(): makeImageUrl(filenames[1]),
+		imageSizes[2].String(): makeImageUrl(filenames[2]),
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(result)
+}
+
+func makeImageUrl(filename string) string {
+	return fmt.Sprintf("%s/%s", os.Getenv("SERVER_HOST_VALUE"), filename)
 }
 
 func saveToFile(input UploadImageDTO) (string, error) {
@@ -132,6 +143,11 @@ func resizeImage(filename string, size ImageSize) (string, error) {
 }
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Println("Error loading .env file")
+	}
+
 	http.HandleFunc("/upload", UploadHandler)
 	http.ListenAndServe(":8080", nil)
 }
