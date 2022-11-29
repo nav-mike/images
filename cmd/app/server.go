@@ -5,12 +5,13 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
 
 	"github.com/disintegration/imaging"
-	"github.com/joho/godotenv"
+	"github.com/nav-mike/images/config"
 )
 
 const IMAGES_DIR = "data/images"
@@ -109,7 +110,7 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func makeImageUrl(filename string) string {
-	return fmt.Sprintf("%s/%s", os.Getenv("SERVER_HOST_VALUE"), filename)
+	return fmt.Sprintf("%s/%s", os.Getenv("SERVER_HOST_URL"), filename)
 }
 
 func saveToFile(input UploadImageDTO) (string, error) {
@@ -164,10 +165,12 @@ func resizeImage(filename, userId string, size ImageSize) (string, error) {
 }
 
 func main() {
-	err := godotenv.Load(".env")
+	_, err := config.LoadConfig()
 	if err != nil {
-		fmt.Println("Error loading .env file")
+		return
 	}
+
+	log.Println("Starting server on port 8080")
 
 	http.HandleFunc("/upload", UploadHandler)
 	http.HandleFunc("/data/images/", ImageHandler)
