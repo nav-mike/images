@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/disintegration/imaging"
 	"github.com/joho/godotenv"
@@ -41,7 +42,17 @@ func ImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.ServeFile(w, r, r.URL.Path[1:])
+	userId := r.Header.Get("X-Custom-Auth-Token") // in real life it'd be JWT token for example
+	if userId == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	if strings.HasPrefix(r.URL.Path, "/images/"+userId) {
+		http.ServeFile(w, r, r.URL.Path[1:])
+	} else {
+		http.Error(w, "Forbidden", http.StatusForbidden)
+	}
 }
 
 func UploadHandler(w http.ResponseWriter, r *http.Request) {
