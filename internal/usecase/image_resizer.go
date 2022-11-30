@@ -34,7 +34,7 @@ func ResizeImage(storage ImageStorage, originalFilename, userId string) (map[str
 	}
 
 	for _, size := range imageSizes {
-		resizedFilename, err := createResizedImage(storage, baseImage, userId, size)
+		resizedFilename, err := createResizedImage(storage, baseImage, originalFilename, userId, size)
 		if err != nil {
 			return nil, err
 		}
@@ -45,14 +45,18 @@ func ResizeImage(storage ImageStorage, originalFilename, userId string) (map[str
 	return resizedFilenames, nil
 }
 
-func createResizedImage(storage ImageStorage, baseImage image.Image, userId string, size ImageSize) (string, error) {
+func createResizedImage(storage ImageStorage, baseImage image.Image, baseFilename, userId string, size ImageSize) (string, error) {
 	log.Printf("Resizing image to %s", size)
 
 	result := imaging.Resize(baseImage, 0, size.Height, imaging.Lanczos)
 
 	// save the resized image
-	resizedFilename := GenerateFilename("image.png", size.Label, "png")
-	err := imaging.Save(result, storage.ImageFileFullPath(userId, resizedFilename))
+	resizedFilename, err := GenerateFilename(baseFilename, size.Label)
+	if err != nil {
+		return "", err
+	}
+
+	err = imaging.Save(result, storage.ImageFileFullPath(userId, resizedFilename))
 	if err != nil {
 		return "", err
 	}

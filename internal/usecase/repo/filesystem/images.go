@@ -62,7 +62,11 @@ func (fs *FileSystem) saveToFile(input entity.UploadImageDTO) (string, error) {
 	}
 
 	// Create file
-	filename := usecase.GenerateFilename("image.png", "original", "png")
+	filename, err := usecase.GenerateFilename(input.Filename, "original")
+	if err != nil {
+		return "", err
+	}
+
 	file, err := os.Create(fs.ImageFileFullPath(input.UserId, filename))
 	if err != nil {
 		return "", err
