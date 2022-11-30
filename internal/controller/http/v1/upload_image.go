@@ -12,6 +12,7 @@ import (
 	"github.com/nav-mike/images/internal/usecase/repo/filesystem"
 )
 
+// PostUploadImageHandler returns handler for POST /upload
 func PostUploadImageHandler(config *config.Config, writer ImageWriter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Upload image")

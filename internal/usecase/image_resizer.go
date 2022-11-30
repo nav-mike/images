@@ -6,6 +6,7 @@ import (
 	"github.com/disintegration/imaging"
 )
 
+// ImageSize represents size of image
 type ImageSize struct {
 	Height int // avoid using width here because proportional scaling is required
 	Label  string
@@ -15,16 +16,19 @@ func (is ImageSize) String() string {
 	return is.Label
 }
 
+// imageSizes represents list of sizes for resizing
 var imageSizes = [...]ImageSize{
 	{Label: "micro", Height: 100},
 	{Label: "small", Height: 200},
 	{Label: "medium", Height: 300},
 }
 
+// ImageStorage defines a service to save image
 type ImageStorage interface {
 	ImageFileFullPath(userId, filename string) string
 }
 
+// ResizeImage resizes image to different (defined) sizes
 func ResizeImage(storage ImageStorage, originalFilename, userId string) (map[string]string, error) {
 	resizedFilenames := make(map[string]string)
 	baseImage, err := imaging.Open(storage.ImageFileFullPath(userId, originalFilename))

@@ -11,8 +11,10 @@ import (
 	"github.com/nav-mike/images/internal/usecase"
 )
 
+// MAX_FILE_SIZE represents max file size in MB
 const MAX_FILE_SIZE = 1024 * 1024 * 10 // 10MB
 
+// SaveImage saves image to file system and create resized copies of the message. Returns map of images' urls
 func (fs *FileSystem) SaveImage(input entity.UploadImageDTO) (entity.UploadedImageResponse, error) {
 	err := fs.createDir(input.UserId)
 	if err != nil {
@@ -34,6 +36,7 @@ func (fs *FileSystem) SaveImage(input entity.UploadImageDTO) (entity.UploadedIma
 	return result, nil
 }
 
+// GetStaticImagePath returns path to image
 func (fs *FileSystem) GetStaticImagePath(userId, requestPath string) (string, error) {
 	path := fs.ImageFileFullPath(userId, strings.Replace(requestPath, "/images/", "", 1))
 	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {

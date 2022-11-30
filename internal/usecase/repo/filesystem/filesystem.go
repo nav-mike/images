@@ -1,5 +1,6 @@
 package filesystem
 
+// FileSystem represents service to save image to the local filesystem
 type FileSystem struct {
 	Path string
 }

@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+// GetImageHandler returns route handler for GET /images/:name
 func GetImageHandler(reader ImageReader) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Getting image request %s \n", r.URL.Path)
@@ -29,6 +30,7 @@ func GetImageHandler(reader ImageReader) http.HandlerFunc {
 	}
 }
 
+// getUserId returns user id from request
 func getUserId(r *http.Request) string {
 	return r.Header.Get("X-Custom-Auth-Token") // getting fake user from header. In real life it should be from session or JWT
 }

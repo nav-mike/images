@@ -8,8 +8,8 @@ import (
 )
 
 type Config struct {
-	ServerHostUrl string
-	ImagesDir     string
+	ServerHostUrl string // ServerHostUrl represents base app host. Used for generate correct images link
+	ImagesDir     string // ImagesDir represents path to images directory
 }
 
 func LoadConfig() (*Config, error) {

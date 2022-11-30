@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+// errorResponse renders error message to response and logs it
 func errorResponse(w http.ResponseWriter, message string, status int, err error) {
 	if err != nil {
 		log.Printf("Error %s\n", err)

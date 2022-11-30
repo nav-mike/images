@@ -19,6 +19,7 @@ func (e *FileValidationError) Error() string {
 	return e.Message
 }
 
+// GenerateFilename generates filename for image. It uses current timestamp and sha1 hash of filename
 func GenerateFilename(baseName, prefix string) (string, error) {
 	re, err := regexp.Compile(`(png)|(jpeg)|(jpg)$`)
 	if err != nil {
