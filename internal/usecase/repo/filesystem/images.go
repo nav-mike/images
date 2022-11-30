@@ -1,13 +1,12 @@
 package filesystem
 
 import (
-	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/nav-mike/images/internal/entity"
+	"github.com/nav-mike/images/internal/usecase"
 )
 
 func (fs *FileSystem) SaveImage(input entity.UploadImageDTO) (UploadedImageResponse, error) {
@@ -35,15 +34,6 @@ func (fs *FileSystem) createDir(userId string) error {
 	return os.MkdirAll(fs.dirPath(userId), os.ModePerm)
 }
 
-func (fs *FileSystem) generateFilename(baseName, prefix, ext string) string {
-	return fmt.Sprintf(
-		"%s-%x.%s",
-		prefix,
-		sha1.Sum([]byte(baseName+time.Now().String()+"."+ext)),
-		ext,
-	)
-}
-
 func (fs *FileSystem) filePath(filename, userId string) string {
 	return fmt.Sprintf("%s/%s/%s", fs.Path, userId, filename)
 }
@@ -56,7 +46,7 @@ func (fs *FileSystem) saveToFile(input entity.UploadImageDTO) (string, error) {
 	}
 
 	// Create file
-	filename := fs.generateFilename("image.png", "original", "png")
+	filename := usecase.GenerateFilename("image.png", "original", "png")
 	file, err := os.Create(fs.filePath(filename, input.UserId))
 	if err != nil {
 		return "", err
