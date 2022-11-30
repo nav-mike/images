@@ -8,6 +8,7 @@ import (
 
 	"github.com/nav-mike/images/config"
 	"github.com/nav-mike/images/internal/entity"
+	"github.com/nav-mike/images/internal/usecase"
 	"github.com/nav-mike/images/internal/usecase/repo/filesystem"
 )
 
@@ -30,7 +31,8 @@ func PostUploadImageHandler(config *config.Config, writer ImageWriter) http.Hand
 		result, err := writer.SaveImage(file)
 		if err != nil {
 			var validationError *filesystem.ValidationError
-			if errors.As(err, &validationError) {
+			var fileValidationError *usecase.FileValidationError
+			if errors.As(err, &validationError) || errors.As(err, &fileValidationError) {
 				errorResponse(w, "Bad request: "+err.Error(), http.StatusBadRequest, err)
 			} else {
 				errorResponse(w, "Internal server error", http.StatusInternalServerError, err)
