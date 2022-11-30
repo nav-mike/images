@@ -3,12 +3,9 @@ package v1
 import (
 	"log"
 	"net/http"
-
-	"github.com/nav-mike/images/config"
-	"github.com/nav-mike/images/internal/usecase/repo/filesystem"
 )
 
-func GetImageHandler(config *config.Config) http.HandlerFunc {
+func GetImageHandler(reader ImageReader) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Getting image request %s \n", r.URL.Path)
 		if r.Method != "GET" {
@@ -22,9 +19,7 @@ func GetImageHandler(config *config.Config) http.HandlerFunc {
 			return
 		}
 
-		fs := filesystem.NewFileSystem(config.ImagesDir)
-
-		fullPath, err := fs.GetStaticImagePath(userId, r.URL.Path)
+		fullPath, err := reader.GetStaticImagePath(userId, r.URL.Path)
 		if err != nil {
 			http.Error(w, "Not found", http.StatusNotFound)
 			return

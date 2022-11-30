@@ -7,10 +7,9 @@ import (
 
 	"github.com/nav-mike/images/config"
 	"github.com/nav-mike/images/internal/entity"
-	"github.com/nav-mike/images/internal/usecase/repo/filesystem"
 )
 
-func PostUploadImageHandler(config *config.Config) http.HandlerFunc {
+func PostUploadImageHandler(config *config.Config, writer ImageWriter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Upload image")
 		if r.Method != "POST" {
@@ -26,8 +25,7 @@ func PostUploadImageHandler(config *config.Config) http.HandlerFunc {
 			return
 		}
 
-		fs := filesystem.NewFileSystem(config.ImagesDir)
-		result, err := fs.SaveImage(file)
+		result, err := writer.SaveImage(file)
 		if err != nil {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return

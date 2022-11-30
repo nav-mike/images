@@ -11,7 +11,7 @@ import (
 	"github.com/nav-mike/images/internal/usecase"
 )
 
-func (fs *FileSystem) SaveImage(input entity.UploadImageDTO) (UploadedImageResponse, error) {
+func (fs *FileSystem) SaveImage(input entity.UploadImageDTO) (entity.UploadedImageResponse, error) {
 	err := fs.createDir(input.UserId)
 	if err != nil {
 		return nil, err
