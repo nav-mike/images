@@ -10,22 +10,6 @@ import (
 	"github.com/nav-mike/images/internal/usecase/repo/filesystem"
 )
 
-type ImageSize struct {
-	Height int // avoid using width here because proportional scaling is required
-	Label  string
-}
-
-func (is ImageSize) String() string {
-	return is.Label
-}
-
-// const array of image sizes
-var imageSizes = [...]ImageSize{
-	{Label: "micro", Height: 100},
-	{Label: "small", Height: 200},
-	{Label: "medium", Height: 300},
-}
-
 func PostUploadImageHandler(config *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Upload image")
