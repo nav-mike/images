@@ -20,7 +20,12 @@ func (fs *FileSystem) SaveImage(input entity.UploadImageDTO) (UploadedImageRespo
 		return nil, err
 	}
 
-	result := make(UploadedImageResponse)
+	result, err := usecase.ResizeImage(fs, orignalFilename, input.UserId)
+
+	if err != nil {
+		return nil, err
+	}
+
 	result["original"] = orignalFilename
 
 	return result, nil
@@ -34,7 +39,7 @@ func (fs *FileSystem) createDir(userId string) error {
 	return os.MkdirAll(fs.dirPath(userId), os.ModePerm)
 }
 
-func (fs *FileSystem) filePath(filename, userId string) string {
+func (fs *FileSystem) ImageFileFullPath(userId, filename string) string {
 	return fmt.Sprintf("%s/%s/%s", fs.Path, userId, filename)
 }
 
@@ -47,7 +52,7 @@ func (fs *FileSystem) saveToFile(input entity.UploadImageDTO) (string, error) {
 
 	// Create file
 	filename := usecase.GenerateFilename("image.png", "original", "png")
-	file, err := os.Create(fs.filePath(filename, input.UserId))
+	file, err := os.Create(fs.ImageFileFullPath(input.UserId, filename))
 	if err != nil {
 		return "", err
 	}
