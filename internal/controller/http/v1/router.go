@@ -12,7 +12,7 @@ func NewRouter(config *config.Config) {
 
 	http.HandleFunc("/upload", PostUploadImageHandler(config))
 
-	http.HandleFunc("/images", GetImageHandler(config))
+	http.HandleFunc("/images/", GetImageHandler(config))
 
 	http.ListenAndServe(":8080", nil)
 }
