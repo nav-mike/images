@@ -11,6 +11,8 @@ import (
 	"github.com/nav-mike/images/internal/usecase"
 )
 
+const MAX_FILE_SIZE = 1024 * 1024 * 10 // 10MB
+
 func (fs *FileSystem) SaveImage(input entity.UploadImageDTO) (entity.UploadedImageResponse, error) {
 	err := fs.createDir(input.UserId)
 	if err != nil {
@@ -23,7 +25,6 @@ func (fs *FileSystem) SaveImage(input entity.UploadImageDTO) (entity.UploadedIma
 	}
 
 	result, err := usecase.ResizeImage(fs, orignalFilename, input.UserId)
-
 	if err != nil {
 		return nil, err
 	}
@@ -55,18 +56,23 @@ func (fs *FileSystem) ImageFileFullPath(userId, filename string) string {
 }
 
 func (fs *FileSystem) saveToFile(input entity.UploadImageDTO) (string, error) {
+	filename, err := usecase.GenerateFilename(input.Filename, "original")
+	if err != nil {
+		return "", err
+	}
+
 	// Decode base64 string to []byte
 	decoded, err := base64.StdEncoding.DecodeString(input.File)
 	if err != nil {
 		return "", err
 	}
 
-	// Create file
-	filename, err := usecase.GenerateFilename(input.Filename, "original")
+	err = validateFileSize(decoded)
 	if err != nil {
 		return "", err
 	}
 
+	// Create file
 	file, err := os.Create(fs.ImageFileFullPath(input.UserId, filename))
 	if err != nil {
 		return "", err
@@ -74,10 +80,21 @@ func (fs *FileSystem) saveToFile(input entity.UploadImageDTO) (string, error) {
 	defer file.Close()
 
 	// Write data to file
-	_, err = file.Write(decoded)
+	writedSize, err := file.Write(decoded)
 	if err != nil {
 		return "", err
 	}
+	if writedSize != len(decoded) {
+		return "", errors.New("file size is not equal to decoded size")
+	}
 
 	return filename, nil
+}
+
+func validateFileSize(base64Value []byte) error {
+	if len(base64Value) > MAX_FILE_SIZE {
+		return NewValidationError("file size is too big")
+	}
+
+	return nil
 }

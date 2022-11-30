@@ -2,11 +2,13 @@ package v1
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 
 	"github.com/nav-mike/images/config"
 	"github.com/nav-mike/images/internal/entity"
+	"github.com/nav-mike/images/internal/usecase/repo/filesystem"
 )
 
 func PostUploadImageHandler(config *config.Config, writer ImageWriter) http.HandlerFunc {
@@ -27,7 +29,12 @@ func PostUploadImageHandler(config *config.Config, writer ImageWriter) http.Hand
 
 		result, err := writer.SaveImage(file)
 		if err != nil {
-			errorResponse(w, "Internal server error", http.StatusInternalServerError, err)
+			var validationError *filesystem.ValidationError
+			if errors.As(err, &validationError) {
+				errorResponse(w, "Bad request: "+err.Error(), http.StatusBadRequest, err)
+			} else {
+				errorResponse(w, "Internal server error", http.StatusInternalServerError, err)
+			}
 			return
 		}
 
