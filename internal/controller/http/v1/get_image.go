@@ -9,19 +9,19 @@ func GetImageHandler(reader ImageReader) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Getting image request %s \n", r.URL.Path)
 		if r.Method != "GET" {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			errorResponse(w, "Method not allowed", http.StatusMethodNotAllowed, nil)
 			return
 		}
 
 		userId := getUserId(r)
 		if userId == "" {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			errorResponse(w, "Unauthorized", http.StatusUnauthorized, nil)
 			return
 		}
 
 		fullPath, err := reader.GetStaticImagePath(userId, r.URL.Path)
 		if err != nil {
-			http.Error(w, "Not found", http.StatusNotFound)
+			errorResponse(w, "Not found", http.StatusNotFound, err)
 			return
 		}
 

@@ -21,13 +21,13 @@ func PostUploadImageHandler(config *config.Config, writer ImageWriter) http.Hand
 
 		err := json.NewDecoder(r.Body).Decode(&file)
 		if err != nil {
-			http.Error(w, "Bad request", http.StatusBadRequest)
+			errorResponse(w, "Bad request", http.StatusBadRequest, err)
 			return
 		}
 
 		result, err := writer.SaveImage(file)
 		if err != nil {
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			errorResponse(w, "Internal server error", http.StatusInternalServerError, err)
 			return
 		}
 
