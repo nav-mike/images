@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"image"
-	"log"
 
 	"github.com/disintegration/imaging"
 )
@@ -46,8 +45,6 @@ func ResizeImage(storage ImageStorage, originalFilename, userId string) (map[str
 }
 
 func createResizedImage(storage ImageStorage, baseImage image.Image, baseFilename, userId string, size ImageSize) (string, error) {
-	log.Printf("Resizing image to %s", size)
-
 	result := imaging.Resize(baseImage, 0, size.Height, imaging.Lanczos)
 
 	// save the resized image

@@ -2,6 +2,6 @@ package entity
 
 type UploadImageDTO struct {
 	Filename string
-	File     string // base64 encoded image
+	File     string // Base64 Encoded String
 	UserId   string
 }
