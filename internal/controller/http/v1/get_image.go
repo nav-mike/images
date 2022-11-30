@@ -1,13 +1,11 @@
 package v1
 
 import (
-	"errors"
 	"log"
 	"net/http"
-	"os"
-	"strings"
 
 	"github.com/nav-mike/images/config"
+	"github.com/nav-mike/images/internal/usecase/repo/filesystem"
 )
 
 func GetImageHandler(config *config.Config) http.HandlerFunc {
@@ -24,8 +22,10 @@ func GetImageHandler(config *config.Config) http.HandlerFunc {
 			return
 		}
 
-		fullPath := getFullImagePath(config, userId, r.URL.Path)
-		if _, err := os.Stat(fullPath); errors.Is(err, os.ErrNotExist) {
+		fs := filesystem.NewFileSystem(config.ImagesDir)
+
+		fullPath, err := fs.GetStaticImagePath(userId, r.URL.Path)
+		if err != nil {
 			http.Error(w, "Not found", http.StatusNotFound)
 			return
 		}
@@ -35,9 +35,5 @@ func GetImageHandler(config *config.Config) http.HandlerFunc {
 }
 
 func getUserId(r *http.Request) string {
-	return r.Header.Get("X-Custom-Auth-Token")
-}
-
-func getFullImagePath(config *config.Config, userId, path string) string {
-	return config.ImagesDir + "/" + userId + "/" + strings.Replace(path, "/images/", "", 1)
+	return r.Header.Get("X-Custom-Auth-Token") // getting fake user from header. In real life it should be from session or JWT
 }
